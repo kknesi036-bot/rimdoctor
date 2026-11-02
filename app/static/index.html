@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>RimDoctor | 림월드 로그 진단</title><link rel="stylesheet" href="/static/style.css"><script src="/static/app.js" defer></script></head>
+<body>
+<main>
+  <header><div class="eyebrow">RIMWORLD LOG REVIEW</div><h1>RimDoctor</h1><p class="lead">긴 로그를, 확인할 수 있는 오류 목록으로.</p><p>반복 오류와 원문 근거를 정리하는 한국어 로그 진단 도우미</p></header>
+  <section class="panel" aria-labelledby="input-title">
+    <div class="section-heading"><h2 id="input-title">01. 로그 입력</h2><span>최대 10MB</span></div>
+    <p class="muted">파일과 붙여넣기 중 하나를 사용하세요. 로그는 저장하지 않으며 분석 중에만 처리합니다.</p>
+    <form id="analysis-form">
+      <label for="log-file">로그 파일 선택 <span class="muted">.log / .txt</span></label>
+      <input type="file" id="log-file" accept=".log,.txt" aria-describedby="file-help">
+      <p id="file-help" class="small muted">Player.log · UTF-8 또는 BOM이 있는 UTF-16 텍스트</p>
+      <label for="log-text">또는 로그 붙여넣기</label>
+      <textarea id="log-text" rows="7" placeholder="오류가 발생한 로그를 여기에 붙여넣으세요." spellcheck="false"></textarea>
+      <div class="actions"><button type="submit" class="primary" id="analyze">로그 분석</button><button type="button" id="sample">샘플로 체험</button><button type="button" id="reset">초기화</button></div>
+    </form>
+    <p id="status" role="status" aria-live="polite">입력을 기다리고 있습니다.</p><p id="error" role="alert" hidden></p>
+  </section>
+  <section id="results" aria-labelledby="results-title" hidden>
+    <div class="section-heading"><h2 id="results-title" tabindex="-1">02. 분석 결과</h2><span id="rule-version" class="small"></span></div>
+    <div class="stats"><div><span>오류 기록</span><strong id="error-count">0</strong></div><div><span>확인 필요</span><strong id="warning-count">0</strong></div><div><span>참고 기록</span><strong id="info-count">0</strong></div></div>
+    <p class="small muted">전체 <span id="line-count">0</span>줄 · 진단 그룹 <span id="group-count">0</span>개</p>
+    <p class="notice" id="result-notice"></p><div id="groups"></div>
+  </section>
+  <aside class="limits"><h2>결과를 읽기 전에</h2><p>관련 모드 후보는 원인 확정이 아닙니다. 오류가 검출되지 않아도 게임의 정상 동작을 보장하지 않습니다. 모드 변경 전에는 원본 세이브를 보존하세요.</p></aside>
+  <footer><span>RimDoctor · 비공식 커뮤니티 도구</span><span id="app-version">프로그램 버전 확인 중</span></footer>
+</main>
+</body></html>

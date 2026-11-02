@@ -1,0 +1,19 @@
+RimDoctor synthetic demonstration log — 실제 사용자 로그가 아닙니다.
+Loading game data...
+[12:00:01] NullReferenceException: Object reference not set to an instance of an object [mod: ExampleColony]
+  at ExampleColony.Worker.Tick ()
+  at Verse.TickManager.DoSingleTick ()
+Game tick completed.
+[12:00:02] NullReferenceException: Object reference not set to an instance of an object [mod: ExampleColony]
+  at ExampleColony.Worker.Tick ()
+  at Verse.TickManager.DoSingleTick ()
+Game tick completed.
+[12:00:03] XML error: PatchOperationReplace failed [mod: ExampleFurniture]
+  at Verse.PatchOperation.Apply (System.Xml.XmlDocument xml)
+Loaded definitions.
+[12:00:04] TypeLoadException: Could not load type ExampleLibrary.Widget
+  at ExampleLibrary.Loader.Load ()
+Loading complete.
+[12:00:05] Error: 알 수 없는 샘플 오류 42
+  at Example.Other.Run ()
+End of synthetic sample.
