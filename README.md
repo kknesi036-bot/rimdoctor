@@ -1,6 +1,6 @@
 # HW3 1단계: Docker 이미지와 CI
 
-기존 림닥터의 기능은 유지합니다. 현재 CI와 Windows Runner 자동 배포를 구성했으며, 로그 자동 입력과 무중단 배포는 이후 단계입니다.
+기존 림닥터의 기능은 유지합니다. 현재 CI와 Windows Runner 자동 배포를 구성했으며, 로그 자동 입력은 이후 단계이며, 무중단 전환과 연속 요청 검증을 추가했습니다.
 
 ## 추가 파일
 - Dockerfile: Python 3.13 기반 이미지, 분석기 로딩 확인, 테스트 단계와 실행 단계 분리
@@ -111,5 +111,19 @@ CI의 이미지 업로드가 성공하면 deploy 작업이 [self-hosted, Windows
 Docker Desktop과 Runner가 실행 중이어야 합니다. Runner는 현재 run.cmd로 실행하므로 창을 유지합니다.
 Docker Hub 인증은 기존 DOCKERHUB_USERNAME / DOCKERHUB_TOKEN Secrets를 사용합니다.
 커밋 SHA 태그를 내려받아 rimdoctor 컨테이너를 교체하고 http://127.0.0.1:8000 에서 상태·버전·샘플 분석을 확인합니다.
-새 컨테이너 검증에 실패하면 이전 컨테이너를 다시 시작합니다. 교체 중 짧은 중단이 있으므로 무중단 배포는 아닙니다.
+아래 3단계의 Nginx 연결 전환 방식으로 교체했습니다. 새 컨테이너를 먼저 검사하며, 실패하면 기존 서비스를 유지합니다.
 Runner 설치 폴더와 Visual Studio 생성 파일은 Git에서 제외합니다.
+
+## HW3 3단계: 무중단 전환과 검증
+- 접속 주소는 http://127.0.0.1:8000 입니다. Nginx 중계 컨테이너는 재시작하지 않고 유지합니다.
+- blue/green 중 비활성 컨테이너에 CI에서 검증한 SHA 이미지로 새 버전을 시작합니다.
+- 새 컨테이너의 상태, 버전, 화면, 샘플 분석을 먼저 검증합니다.
+- Nginx 설정 검사 후 graceful reload로 새 요청을 새 컨테이너에 보냅니다. 기존 요청은 이전 worker가 끝까지 처리합니다.
+- 새 경로 검증 실패 시 이전 설정으로 복귀합니다. 기존 worker가 종료된 뒤에만 이전 앱 컨테이너를 제거합니다. 90초 내 요청이 끝나지 않으면 두 컨테이너를 보존하고 작업을 실패 처리합니다.
+- 최초 중계 서버 설치 시에는 기존 포트를 넘기는 중단이 한 번 발생하며, 이를 무중단 배포 실험에 포함하지 않습니다.
+- deploy-verified.ps1은 Windows의 실제 localhost 주소로 상태 확인, 화면, 로그 분석 요청을 3개 스레드에서 반복합니다. 전환 전 시작한 업로드를 전환 후 완료하는 검사도 포함합니다.
+- 실패 0건, 새 backend 관측, 목표 버전 확인, 진행 중 업로드 성공을 모두 만족해야 배포 검증이 통과합니다. 같은 커밋 재실행도 backend 전환으로 검증합니다.
+- Actions의 availability-proof 아티팩트에는 requests.jsonl 전체 측정 기록과 summary.json 결과가 저장됩니다(14일 보관).
+- 검증기는 Python 표준 라이브러리만 사용합니다. 현재 PC의 Python 3.13 설치 경로를 우선 사용하고, 없으면 PATH의 python.exe를 사용합니다.
+- Docker Desktop이나 PC 자체의 재시작/장애까지 무중단으로 만드는 구성은 아닙니다. 로컬 측정 결과는 해당 측정 구간과 부하에서의 결과입니다.
+- Nginx graceful reload 근거: https://nginx.org/en/docs/control.html
