@@ -1,3 +1,47 @@
+# HW3 1단계: Docker 이미지와 CI
+
+기존 림닥터의 기능은 유지합니다. 로그 자동 입력과 CD/무중단 배포는 이후 단계입니다.
+
+## 추가 파일
+- Dockerfile: Python 3.13 기반 이미지, 분석기 로딩 확인, 테스트 단계와 실행 단계 분리
+- constraints.txt: 검증한 라이브러리 버전 고정
+- .dockerignore: 소스와 필요한 설정만 빌드에 포함
+- .github/workflows/ci.yml: main push → 테스트 → 이미지 빌드 → HTTP 분석 확인 → Docker Hub 업로드
+- scripts/smoke.py: 실행된 컨테이너의 상태·버전·화면·분석 결과 확인
+
+## Docker 실행
+```powershell
+docker build --target test --build-arg APP_VERSION=local -t rimdoctor:tests .
+docker build --target final --build-arg APP_VERSION=local -t rimdoctor:local .
+docker run --rm --name rimdoctor-local -p 127.0.0.1:8000:8000 rimdoctor:local
+```
+브라우저에서 http://127.0.0.1:8000 을 엽니다. 기존 서버가 8000번을 사용하면 `127.0.0.1:18000:8000`으로 바꾸고 18000번 주소로 접속합니다.
+
+## GitHub 업로드
+이 폴더는 기존 `kknesi036-bot/rimdoctor` 저장소에서 복제한 Git 저장소입니다. 파일은 아직 원격에 게시하지 않았습니다.
+
+GitHub 웹 업로드 시 **추가 파일만** 올리려면 별도 변경파일 ZIP을 사용합니다. ZIP 자체가 아니라 압축을 푼 내용물을 저장소 루트에 올립니다. `.github/workflows/ci.yml` 경로가 유지되어야 합니다. 토큰은 파일에 넣지 않습니다.
+
+Git 사용 시 이 폴더에서:
+```powershell
+git add Dockerfile .dockerignore .gitignore constraints.txt .github/workflows/ci.yml scripts/smoke.py README.md
+git commit -m "Add Docker image and CI for RimDoctor"
+git push origin main
+```
+
+## 인증과 게시 위치
+Repository secrets의 `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`을 사용합니다. 사용자명은 `qwer09872234`, 토큰은 이미지 업로드 권한이 필요합니다.
+
+이미지 목적지: `qwer09872234/rimdoctor`. 테스트한 동일 이미지를 커밋 SHA 태그와 `latest` 태그로 게시합니다. Pull request는 테스트·빌드만 수행하고 이미지를 게시하지 않습니다.
+
+main에 push한 뒤 GitHub Actions의 `RimDoctor - Test, Build and Push` 결과와 Docker Hub Tags를 확인합니다. 이 CI는 로컬 서버를 자동 갱신하는 CD까지 구현한 것은 아닙니다.
+
+구성 참고: https://docs.docker.com/build/ci/github-actions/
+
+---
+
+## 기존 HW2 설명 (과거 제출 범위)
+
 # RimDoctor
 
 림월드 로그의 반복 오류와 원문 근거를 정리하는 한국어 웹서비스입니다. Python FastAPI와 HTML/CSS/JavaScript로 구성하며 외부 AI API나 데이터베이스를 사용하지 않습니다.
