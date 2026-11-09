@@ -54,7 +54,7 @@ jobs:
       cancel-in-progress: false
     defaults:
       run:
-        shell: powershell
+        shell: powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File {0}
     steps:
       - uses: actions/checkout@v4
       - name: Check Docker Desktop

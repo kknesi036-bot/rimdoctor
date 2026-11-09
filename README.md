@@ -1,6 +1,6 @@
 # HW3 1단계: Docker 이미지와 CI
 
-기존 림닥터의 기능은 유지합니다. 로그 자동 입력과 CD/무중단 배포는 이후 단계입니다.
+기존 림닥터의 기능은 유지합니다. 현재 CI와 Windows Runner 자동 배포를 구성했으며, 로그 자동 입력과 무중단 배포는 이후 단계입니다.
 
 ## 추가 파일
 - Dockerfile: Python 3.13 기반 이미지, 분석기 로딩 확인, 테스트 단계와 실행 단계 분리
@@ -34,7 +34,7 @@ Repository secrets의 `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`을 사용합니다
 
 이미지 목적지: `qwer09872234/rimdoctor`. 테스트한 동일 이미지를 커밋 SHA 태그와 `latest` 태그로 게시합니다. Pull request는 테스트·빌드만 수행하고 이미지를 게시하지 않습니다.
 
-main에 push한 뒤 GitHub Actions의 `RimDoctor - Test, Build and Push` 결과와 Docker Hub Tags를 확인합니다. 이 CI는 로컬 서버를 자동 갱신하는 CD까지 구현한 것은 아닙니다.
+main에 push한 뒤 GitHub Actions의 `RimDoctor - Test, Build and Push` 결과와 Docker Hub Tags를 확인합니다. 이미지 게시 후 Windows Runner의 deploy 작업이 로컬 서버를 갱신합니다.
 
 구성 참고: https://docs.docker.com/build/ci/github-actions/
 
