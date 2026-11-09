@@ -44,7 +44,12 @@ if (-not $bootstrap) {
     $target = if ($old -eq 'rimdoctor-blue') { 'rimdoctor-green' } else { 'rimdoctor-blue' }
 } else { $target = 'rimdoctor-blue' }
 if ($existing -contains $target) { Docker rm -f $target }
-Docker run -d --name $target --label rimdoctor.managed=true --network $network --restart unless-stopped $image
+$logDirectory = if ($env:RIMDOCTOR_LOG_DIR) { $env:RIMDOCTOR_LOG_DIR } else { Join-Path $env:USERPROFILE 'AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios' }
+$logArguments = @()
+if (Test-Path -LiteralPath $logDirectory -PathType Container) {
+    $logArguments = @('--mount', "type=bind,source=$logDirectory,target=/rimworld-logs,readonly")
+} else { Write-Warning 'RimWorld log directory not found; manual input remains available.' }
+Docker run -d --name $target --label rimdoctor.managed=true --network $network --restart unless-stopped @logArguments $image
 try {
     Docker run --rm --network $network --mount "type=bind,source=$PSScriptRoot/smoke.py,target=/smoke.py,readonly" $image python /smoke.py --url "http://${target}:8000" --version $Version
 } catch {
@@ -114,6 +119,3 @@ try {
     }
     Write-Output "Verified deployment: $Version via $target at http://127.0.0.1:8000"
 } finally { Remove-Item -LiteralPath $temp -ErrorAction SilentlyContinue }
-
-
-

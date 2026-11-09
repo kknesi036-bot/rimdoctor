@@ -1,6 +1,6 @@
 # HW3 1단계: Docker 이미지와 CI
 
-기존 림닥터의 기능은 유지합니다. 현재 CI와 Windows Runner 자동 배포를 구성했으며, 로그 자동 입력은 이후 단계이며, 무중단 전환과 연속 요청 검증을 추가했습니다.
+기존 림닥터의 기능은 유지합니다. 현재 CI와 Windows Runner 자동 배포를 구성했으며, Player.log 자동 입력과 무중단 전환, 연속 요청 검증을 구현했습니다.
 
 ## 추가 파일
 - Dockerfile: Python 3.13 기반 이미지, 분석기 로딩 확인, 테스트 단계와 실행 단계 분리
@@ -127,3 +127,14 @@ Runner 설치 폴더와 Visual Studio 생성 파일은 Git에서 제외합니다
 - 검증기는 Python 표준 라이브러리만 사용합니다. 현재 PC의 Python 3.13 설치 경로를 우선 사용하고, 없으면 PATH의 python.exe를 사용합니다.
 - Docker Desktop이나 PC 자체의 재시작/장애까지 무중단으로 만드는 구성은 아닙니다. 로컬 측정 결과는 해당 측정 구간과 부하에서의 결과입니다.
 - Nginx graceful reload 근거: https://nginx.org/en/docs/control.html
+
+## 기능 개선: Player.log 자동 입력
+- 기존 방식: Player.log를 파일 선택 또는 붙여넣기로 입력하고 로그 분석을 실행해야 했습니다.
+- 개선 방식: 자동 입력 시작을 누르면 이 PC의 Player.log를 읽고 2초 간격으로 변경을 확인합니다. 파일이 바뀌었을 때만 다시 분석합니다.
+- 중지를 누르면 더 이상 파일을 확인하지 않습니다. 수동 분석/샘플 실행/초기화도 자동 입력을 중지합니다. 페이지를 다시 열면 자동으로 시작하지 않습니다.
+- 기본 Windows 로그 위치: %USERPROFILE%/AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios/Player.log
+- 배포 스크립트가 해당 폴더를 컨테이너의 /rimworld-logs에 읽기 전용으로 연결합니다. 로그 교체와 초기화도 반영합니다. 폴더가 없으면 수동 입력을 계속 사용할 수 있습니다.
+- Runner의 RIMDOCTOR_LOG_DIR 환경변수로 연결 폴더를 지정할 수 있습니다. Python 직접 실행 시 RIMDOCTOR_PLAYER_LOG로 읽을 파일을 지정할 수 있습니다.
+- 게임 로그와 세이브에 쓰지 않으며 원문을 Git/Docker 이미지/배포 증빙에 포함하지 않습니다. 자동 읽기 API는 localhost 호스트만 허용하며 외부 Origin을 거부합니다.
+- 로그가 없거나 비어 있으면 대기 안내를 표시합니다. 10MiB 초과, 읽기 권한, 인코딩 오류는 안내하고 재확인합니다. 이전 결과를 최신 결과로 표시하지 않습니다.
+- 테스트는 합성 파일로 추가·재작성·초기화·삭제 후 재생성·인코딩·크기 제한·외부 Origin 거부를 확인합니다.

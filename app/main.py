@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
 from .analyzer import RULES_VERSION, analyze
+from .autolog import read_player_log
 
 MAX_BYTES = 10 * 1024 * 1024
 STATIC = Path(__file__).parent / "static"
@@ -37,6 +38,18 @@ async def health():
 
 def error(message, status=400):
     return JSONResponse({"error": message}, status_code=status)
+
+
+@app.get('/api/autolog')
+async def auto_log(request: Request, known: str = ''):
+    if request.url.hostname not in {'127.0.0.1', 'localhost', '::1'}:
+        return error('자동 입력은 이 PC의 localhost 주소에서만 사용할 수 있습니다.', 403)
+    origin = request.headers.get('origin')
+    if origin and origin != str(request.base_url).rstrip('/'):
+        return error('다른 사이트에서는 자동 로그를 읽을 수 없습니다.', 403)
+    if len(known) > 64:
+        return error('잘못된 변경 확인 값입니다.')
+    return await run_in_threadpool(read_player_log, known)
 
 
 @app.post("/api/analyze")
